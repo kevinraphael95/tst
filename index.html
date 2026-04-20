@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KevinScale — Mesure ta compatibilité idéologique avec Kévin</title>
+  <meta name="description" content="À quel point tu partages les valeurs de Kévin ? Réponds à 30 questions sur 11 axes idéologiques et découvre ton score." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Crimson+Pro:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── HEADER (visible on quiz screen) ──────────────────── -->
+  <header class="site-header" id="site-header">
+    <div class="container">
+      <div class="logo">
+        <span class="logo-k">K</span>
+        KevinScale
+      </div>
+      <div class="progress-wrap" id="header-progress">
+        <div class="progress-label">
+          <span>PROGRESSION</span>
+          <span class="progress-count">0 / 0</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progressBar"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  SCREEN 1 — INTRO                                      -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="screen active" id="screen-intro">
+    <div class="container">
+      <div style="padding: 48px 0 0;"></div>
+      <div class="intro-grid">
+
+        <!-- Left column -->
+        <div class="intro-left">
+          <div class="intro-eyebrow">Test idéologique · Édition personnelle</div>
+          <h1 class="intro-title">Kevin<br><em>Scale</em></h1>
+          <p class="intro-lead">
+            À quel point partages-tu les valeurs de&nbsp;<strong>Kévin</strong>&nbsp;?
+            Réponds à une série de questions sur les grands axes idéologiques
+            et découvre ton score de compatibilité axe par axe.
+          </p>
+
+          <div class="intro-stats">
+            <div class="stat-item">
+              <span class="stat-num">11</span>
+              <span class="stat-lbl">Axes</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-num" id="q-count-stat">—</span>
+              <span class="stat-lbl">Questions</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-num">~5<span style="font-size:1rem;font-weight:400">min</span></span>
+              <span class="stat-lbl">Durée</span>
+            </div>
+          </div>
+
+          <button class="btn-primary" id="btn-start">
+            Commencer le test
+            <span class="arrow">→</span>
+          </button>
+
+          <p style="margin-top:20px; font-size: 0.75rem; color: var(--text-3); font-family: 'IBM Plex Mono', monospace; letter-spacing: .5px;">
+            Aucune donnée collectée · Résultats calculés localement
+          </p>
+        </div>
+
+        <!-- Right column — axes preview -->
+        <div class="intro-right">
+          <div class="axes-preview-title">Les 11 axes mesurés</div>
+          <div id="axes-preview-list"></div>
+        </div>
+
+      </div>
+      <div style="padding-bottom: 64px;"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  SCREEN 2 — QUIZ                                       -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="screen" id="screen-quiz">
+    <div class="container">
+      <div style="padding-top: 32px;"></div>
+
+      <!-- Mobile progress bar -->
+      <div class="mobile-progress">
+        <div class="progress-label">
+          <span>PROGRESSION</span>
+          <span class="progress-count">0 / 0</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill"></div>
+        </div>
+      </div>
+      <div style="padding-top: 24px;"></div>
+
+      <div class="quiz-container">
+
+        <!-- Sidebar — axis nav -->
+        <aside class="quiz-sidebar">
+          <div class="sidebar-card">
+            <span class="sidebar-label">Axes</span>
+            <ul class="axis-nav" id="axis-nav" role="list"></ul>
+          </div>
+
+          <div class="sidebar-card">
+            <span class="sidebar-label">Comment répondre</span>
+            <p style="font-size: var(--fs-sm); color: var(--text-2); line-height: 1.6;">
+              Chaque question peut influencer un ou plusieurs axes. Répondez en fonction de votre opinion personnelle sincère.
+            </p>
+          </div>
+        </aside>
+
+        <!-- Main question -->
+        <main class="quiz-main" role="main">
+
+          <div class="q-header">
+            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:8px; margin-bottom: 16px;">
+              <div class="q-axis-badge" id="q-axis-badge" aria-live="polite">—</div>
+              <span class="q-number" id="q-number" aria-live="polite">— / —</span>
+            </div>
+            <h2 class="q-text" id="q-text" aria-live="polite">Chargement…</h2>
+          </div>
+
+          <!-- Likert scale -->
+          <div
+            class="likert-grid"
+            id="likert-grid"
+            role="group"
+            aria-label="Choisissez votre niveau d'accord"
+          ></div>
+
+          <div class="scale-hint">
+            <span>← Accord total</span>
+            <span>Sans opinion</span>
+            <span>Désaccord total →</span>
+          </div>
+
+          <!-- Navigation -->
+          <div class="quiz-nav">
+            <button
+              class="btn-secondary"
+              id="btn-prev"
+              onclick="KS.prev()"
+              disabled
+              aria-label="Question précédente"
+            >
+              ← <span>Précédent</span>
+            </button>
+
+            <button
+              class="btn-next"
+              id="btn-next"
+              onclick="KS.next()"
+              disabled
+              aria-label="Question suivante"
+            >
+              Suivant <span class="arrow">→</span>
+            </button>
+          </div>
+
+        </main>
+      </div>
+      <div style="padding-bottom: 64px;"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!--  SCREEN 3 — RESULTS                                    -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div class="screen" id="screen-results">
+
+    <!-- Dark results header -->
+    <div class="results-header">
+      <div class="container">
+        <div>
+          <div class="results-eyebrow">Résultats · KevinScale</div>
+          <h2 class="results-title" id="results-title">Calcul en cours…</h2>
+          <p class="results-verdict" id="results-verdict"></p>
+        </div>
+        <div class="global-score-box" aria-live="polite">
+          <span class="score-num"><span id="global-score">0</span><span class="score-unit">%</span></span>
+          <span class="score-label">comme Kévin</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Axes detail -->
+    <div class="container">
+      <div style="padding-top: 40px;"></div>
+
+      <div class="results-section-title">
+        <span>Résultats par axe</span>
+        <span style="font-weight:400; color:var(--text-3);">
+          <span style="display:inline-block;width:12px;height:12px;background:var(--kevin);border-radius:1px;vertical-align:middle;margin-right:4px;"></span> K = position de Kévin
+          &nbsp;&nbsp;
+          <span style="display:inline-block;width:10px;height:10px;background:var(--accent);border-radius:50%;vertical-align:middle;margin-right:4px;"></span> Vous
+        </span>
+      </div>
+
+      <div class="results-grid" id="results-grid"></div>
+
+      <!-- Footer actions -->
+      <div class="results-footer">
+        <button class="btn-outline" onclick="KS.reset()" aria-label="Recommencer le test">
+          ↺ Recommencer
+        </button>
+        <button class="btn-outline" id="btn-copy" onclick="copyResults()" aria-label="Copier le lien">
+          ⎘ Copier les résultats
+        </button>
+      </div>
+
+      <div style="padding-bottom: 80px;"></div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="questions.js"></script>
+  <script src="app.js"></script>
+  <script>
+    // Patch: fill question count on intro
+    document.addEventListener("DOMContentLoaded", function () {
+      const el = document.getElementById("q-count-stat");
+      if (el && typeof QUESTIONS !== "undefined") el.textContent = QUESTIONS.length;
+    });
+
+    // Copy results to clipboard
+    function copyResults() {
+      const score = document.getElementById("global-score")?.textContent || "?";
+      const title = document.getElementById("results-title")?.textContent || "";
+      const text = `J'ai fait le KevinScale : ${score}% de compatibilité avec Kévin — "${title}". Et toi ? 👇`;
+      navigator.clipboard?.writeText(text).then(() => {
+        const btn = document.getElementById("btn-copy");
+        if (btn) {
+          const orig = btn.textContent;
+          btn.textContent = "✓ Copié !";
+          setTimeout(() => (btn.textContent = orig), 2000);
+        }
+      });
+    }
+  </script>
+</body>
+</html>

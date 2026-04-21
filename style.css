@@ -564,3 +564,52 @@ footer a:hover { color: #fff; }
   .axis-row-label-left,
   .axis-row-label-right { width: 100%; text-align: left; }
 }
+
+/* ── BARRES RÉSULTATS STYLE POLITISCALES ─────────────────── */
+.ps-axis-row {
+  margin-bottom: 22px;
+}
+
+.ps-axis-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.ps-axis-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #777;
+  letter-spacing: 1px;
+}
+
+.ps-axis-near,
+.ps-axis-far {
+  font-size: 0.75rem;
+  color: #aaa;
+}
+
+.ps-bar-row {
+  display: flex;
+  height: 28px;
+  border-radius: 3px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.ps-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #fff;
+  min-width: 0;
+  transition: width 1s cubic-bezier(.16,1,.3,1);
+}
+
+.ps-seg-neut {
+  background: #c8c8c8;
+  color: #666;
+}

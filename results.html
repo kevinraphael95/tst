@@ -13,7 +13,6 @@
   <div id="header">
     <div class="headerLeft">
       <a href="index.html" title="Accueil"><i class="fa fa-home"></i></a>
-      <a href="index.html#help" title="Aide"><i class="fa fa-question-circle"></i></a>
     </div>
     <div class="headerMiddle">
       <h1><a href="index.html">KevinScale</a></h1>
@@ -25,45 +24,39 @@
 <div class="results-wrap">
 
   <p class="results-intro">
-    Le résultat de votre KevinScale est décomposé en <strong id="axes-count">11</strong> axes.
-    Chaque axe indique votre positionnement par rapport à Kévin sur deux idéologies opposées.
+    Votre résultat KevinScale est décomposé en <strong>8 axes</strong>.
+    Chaque barre indique votre proximité idéologique avec Kévin de 0 à 100%.
   </p>
 
-  <!-- Score global + verdict -->
   <div class="global-score-line">
     <div class="global-score-num"><span id="global-score">—</span><span style="font-size:1.8rem">%</span></div>
-    <span class="global-score-lbl">de compatibilité avec Kévin</span>
+    <span class="global-score-lbl">de proximité idéologique avec Kévin</span>
   </div>
 
   <div class="verdict-title" id="verdict-title"></div>
   <div class="verdict-text"  id="verdict-text"></div>
 
-  <!-- Carte résultats avec barres -->
-  <div class="results-card" id="results-card">
+  <!-- Carte résultats style PolitiScales -->
+  <div class="results-card">
     <div class="results-card-header">
       <div class="results-site-name">KevinScale</div>
-      <div class="results-label-row" id="label-row"></div>
+      <!-- Drapeau SVG -->
+      <div id="flag-wrap" style="margin:16px auto 4px;width:220px;height:132px;"></div>
+      <div id="flag-label" style="text-align:center;font-style:italic;font-size:1rem;color:#555;margin-bottom:16px;"></div>
     </div>
     <div id="axes-list"></div>
   </div>
 
-  <!-- URL partage -->
-  <div style="text-align:center;margin-bottom:20px;">
-    <input type="text" id="share-url" readonly
-      style="width:100%;max-width:480px;padding:8px 12px;border:1px solid #ccc;border-radius:4px;font-size:0.82rem;color:#555;text-align:center;background:#f9f9f9;" />
-  </div>
-
-  <!-- Actions -->
   <div class="results-actions">
     <button class="btn-action" onclick="location.href='index.html'">↺ Recommencer</button>
-    <button class="btn-action" id="btn-copy" onclick="copyShare()">⎘ Copier le lien</button>
-    <button class="btn-action" onclick="downloadImage()">⬇ Télécharger</button>
+    <button class="btn-action" id="btn-copy" onclick="copyShare()">⎘ Copier le score</button>
+    <button class="btn-action" onclick="downloadImage()">⬇ Télécharger l'image</button>
   </div>
 
 </div>
 
 <footer>
-  Un test inspiré de <a href="https://politiscales.fr" target="_blank">PolitiScales</a>.
+  Un test inspiré de <a href="https://politiscales.fr" target="_blank">PolitiScales</a>. Résultats calculés localement · Aucune donnée collectée.
 </footer>
 
 <script src="questions.js"></script>
@@ -71,96 +64,83 @@
 (function() {
   "use strict";
 
-  // ── Récupération des scores ─────────────────────────────
   const raw = sessionStorage.getItem("ks_scores");
   if (!raw) { window.location.href = "index.html"; return; }
   const scores = JSON.parse(raw);
 
-  // ── Score global ────────────────────────────────────────
-  const global = Math.round(AXES.reduce((s, a) => s + scores[a.id], 0) / AXES.length);
+  // Score global = moyenne des proximités
+  const global = Math.round(AXES.reduce((s, a) => s + (scores[a.id] || 0), 0) / AXES.length);
   document.getElementById("global-score").textContent = global;
 
-  // ── Verdict ─────────────────────────────────────────────
   const verdict = VERDICTS.find(v => global >= v.min) || VERDICTS[VERDICTS.length - 1];
   document.getElementById("verdict-title").textContent = verdict.emoji + " " + verdict.title;
   document.getElementById("verdict-text").textContent  = verdict.text;
 
-  // ── Labels ──────────────────────────────────────────────
-  const labelRow = document.getElementById("label-row");
-  const LABEL_COLORS = ["#e63946","#e040fb","#ffd600","#43a047","#29b6f6","#26c6da","#ffca28","#a5d6a7","#f48fb1","#ff7043","#00e5ff"];
-  AXES.forEach((axis, i) => {
-    const score = scores[axis.id];
-    const side  = score < 50 ? axis.left.label : axis.right.label;
-    const color = score < 50 ? axis.left.color : axis.right.color;
-    const tag = document.createElement("span");
-    tag.className = "results-label-tag";
-    tag.style.background = color;
-    tag.textContent = side;
-    labelRow.appendChild(tag);
-  });
+  // ── Drapeau : 3 axes avec la plus haute proximité ────────
+  const top3 = [...AXES].sort((a, b) => (scores[b.id]||0) - (scores[a.id]||0)).slice(0, 3);
+  const flagLabel = top3.map(a => a.label.split(" ")[0]).join(" · ");
+  document.getElementById("flag-label").textContent = flagLabel;
 
-  // ── Axes ────────────────────────────────────────────────
+  (function buildFlag() {
+    const W = 220, H = 132;
+    const bh = H / 3;
+    const svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+      <rect x="0" y="0"       width="${W}" height="${bh}"   fill="${top3[0].color}"/>
+      <rect x="0" y="${bh}"   width="${W}" height="${bh}"   fill="${top3[1].color}"/>
+      <rect x="0" y="${bh*2}" width="${W}" height="${bh}"   fill="${top3[2].color}"/>
+      <polygon points="0,0 ${W*0.42},${H/2} 0,${H}" fill="#ffffff"/>
+    </svg>`;
+    document.getElementById("flag-wrap").innerHTML = svg;
+  })();
+
+  // ── Barres par axe style PolitiScales ───────────────────
+  // Chaque barre = [% proche] [% neutre] [% opposé]
+  // Proche = score, Opposé = 100-score, Neutre = zone centrale
   const axesList = document.getElementById("axes-list");
 
-  AXES.forEach(axis => {
-    const score    = scores[axis.id];
-    const leftPct  = score;
-    const rightPct = 100 - score;
-    const kevinPct = axis.kevinPosition;
+  AXES.forEach((axis, idx) => {
+    const prox  = scores[axis.id] || 50;
+    const oppos = 100 - prox;
+    // Zone neutre : on compresse les extrêmes vers le centre
+    const spread   = Math.abs(prox - 50);          // 0=neutre, 50=max tranché
+    const neutralW = Math.max(10, 40 - spread);    // 10–40%
+    const proxW    = Math.round((prox  / 100) * (100 - neutralW));
+    const opposW   = Math.round((oppos / 100) * (100 - neutralW));
+    const neutW    = 100 - proxW - opposW;
 
     const row = document.createElement("div");
-    row.className = "axis-row";
-    row.style.opacity = "0";
-    row.style.transform = "translateY(8px)";
-    row.style.transition = "opacity .4s ease, transform .4s ease";
+    row.className = "ps-axis-row";
+    row.style.cssText = "opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease;";
 
     row.innerHTML = `
-      <div class="axis-row-label-left" style="color:${axis.left.color}">
-        ${axis.left.label}
+      <div class="ps-axis-meta">
+        <span class="ps-axis-near">Proche Kévin</span>
+        <span class="ps-axis-title">${axis.label.toUpperCase()}</span>
+        <span class="ps-axis-far">Opposé</span>
       </div>
-      <div class="axis-bar-wrap">
-        <div style="font-size:9px;color:#aaa;text-align:right;margin-bottom:14px;letter-spacing:.5px;">
-          ${axis.icon} ${axis.label.toUpperCase()}
+      <div class="ps-bar-row">
+        <div class="ps-seg ps-seg-prox"  style="width:${proxW}%;background:${axis.color}">
+          ${proxW > 7 ? proxW + "%" : ""}
         </div>
-        <div class="axis-bar-track" style="position:relative;">
-          <div class="axis-bar-left"  style="width:${leftPct}%;background:${axis.left.color};">
-            ${leftPct > 12 ? leftPct + "%" : ""}
-          </div>
-          <div class="axis-bar-right" style="width:${rightPct}%;background:${axis.right.color};">
-            ${rightPct > 12 ? rightPct + "%" : ""}
-          </div>
-          <div class="axis-kevin-label" style="left:${kevinPct}%">K</div>
-          <div class="axis-kevin-marker" style="left:${kevinPct}%"></div>
+        <div class="ps-seg ps-seg-neut"  style="width:${neutW}%">
+          ${neutW > 7 ? neutW + "%" : ""}
         </div>
-      </div>
-      <div class="axis-row-label-right" style="color:${axis.right.color}">
-        ${axis.right.label}
+        <div class="ps-seg ps-seg-oppos" style="width:${opposW}%;background:${axis.color};opacity:.3">
+          ${opposW > 7 ? opposW + "%" : ""}
+        </div>
       </div>
     `;
-
     axesList.appendChild(row);
+
+    setTimeout(() => {
+      row.style.opacity = "1";
+      row.style.transform = "translateY(0)";
+    }, 200 + idx * 70);
   });
 
-  // Reveal animé
-  setTimeout(() => {
-    document.querySelectorAll(".axis-row").forEach((row, i) => {
-      setTimeout(() => {
-        row.style.opacity = "1";
-        row.style.transform = "translateY(0)";
-      }, i * 60);
-    });
-  }, 200);
-
-  // ── URL de partage ─────────────────────────────────────
-  const encoded = btoa(JSON.stringify(scores));
-  const shareUrl = window.location.origin + window.location.pathname + "?r=" + encoded;
-  document.getElementById("share-url").value = shareUrl;
-
-  // ── Copier lien ────────────────────────────────────────
+  // ── Copier score ─────────────────────────────────────────
   window.copyShare = function() {
-    const url = document.getElementById("share-url").value;
-    const score = global;
-    const text  = `J'ai fait le KevinScale : ${score}% de compatibilité avec Kévin — "${verdict.title}". Et toi ? ${url}`;
+    const text = `J'ai fait le KevinScale : ${global}% de proximité avec Kévin — "${verdict.emoji} ${verdict.title}". Et toi ? https://kevinraphael95.github.io/tst/`;
     navigator.clipboard?.writeText(text).then(() => {
       const btn = document.getElementById("btn-copy");
       const orig = btn.textContent;
@@ -169,89 +149,169 @@
     });
   };
 
-  // ── Télécharger image ──────────────────────────────────
+  // ── Image téléchargeable — style PolitiScales ────────────
   window.downloadImage = function() {
-    const W = 900, H = 660;
+    const W      = 800;
+    const PAD    = 36;
+    const HEADER = 56;
+    const FLAG_H = 148;
+    const ROW_H  = 62;
+    const H      = HEADER + FLAG_H + 50 + 70 + AXES.length * ROW_H + 48;
+
     const canvas = document.createElement("canvas");
     canvas.width = W; canvas.height = H;
     const ctx = canvas.getContext("2d");
 
-    ctx.fillStyle = "#f0f0f0";
+    // Fond gris clair — identique PolitiScales
+    ctx.fillStyle = "#ebebeb";
     ctx.fillRect(0, 0, W, H);
 
     // Header violet
     ctx.fillStyle = "#6a0dad";
-    ctx.fillRect(0, 0, W, 70);
+    ctx.fillRect(0, 0, W, HEADER);
     ctx.fillStyle = "#fff";
-    ctx.font = "bold 28px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText("KevinScale", W / 2, 44);
-
-    // Score
-    ctx.fillStyle = "#6a0dad";
-    ctx.font = "bold 52px Arial";
+    ctx.font = "bold 24px Arial, sans-serif";
     ctx.textAlign = "left";
-    ctx.fillText(global + "%", 36, 130);
-    ctx.fillStyle = "#555";
-    ctx.font = "18px Arial";
-    ctx.fillText("de compatibilité avec Kévin  —  " + verdict.emoji + " " + verdict.title, 36, 158);
+    ctx.fillText("KevinScale", PAD, 35);
+    ctx.font = "13px Arial, sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,.7)";
+    ctx.textAlign = "right";
+    ctx.fillText("kevinraphael95.github.io/tst", W - PAD, 35);
+
+    // Drapeau centré
+    const FW = 200, FH = 120;
+    const FX = (W - FW) / 2, FY = HEADER + 20;
+    const bh = FH / 3;
+
+    // Bandes
+    [top3[0].color, top3[1].color, top3[2].color].forEach((c, i) => {
+      ctx.fillStyle = c;
+      ctx.fillRect(FX, FY + i * bh, FW, bh);
+    });
+    // Triangle blanc
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.moveTo(FX, FY);
+    ctx.lineTo(FX + FW * 0.42, FY + FH / 2);
+    ctx.lineTo(FX, FY + FH);
+    ctx.closePath();
+    ctx.fill();
+
+    // Label drapeau
+    ctx.fillStyle = "#444";
+    ctx.font = "italic 17px Arial, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(flagLabel, W / 2, FY + FH + 22);
+
+    // Verdict + score
+    const VY = FY + FH + 50;
+    ctx.fillStyle = "#111";
+    ctx.font = "bold 22px Arial, sans-serif";
+    ctx.textAlign = "left";
+    ctx.fillText(`${verdict.emoji} ${verdict.title}`, PAD, VY);
+    ctx.fillStyle = "#6a0dad";
+    ctx.font = "bold 38px Arial, sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText(global + "%", W - PAD, VY + 2);
+    ctx.fillStyle = "#666";
+    ctx.font = "13px Arial, sans-serif";
+    ctx.textAlign = "right";
+    ctx.fillText("de proximité avec Kévin", W - PAD, VY + 20);
 
     // Axes
-    const padX = 36, startY = 188;
-    const barW  = W - padX * 2 - 220;
-    const barOX = 110;
-    const rowH  = 42;
+    const AY   = VY + 46;
+    const BAR_X = PAD + 170;
+    const BAR_W = W - BAR_X - PAD;
+    const BAR_H = 26;
 
     AXES.forEach((axis, i) => {
-      const score   = scores[axis.id];
-      const ky      = startY + i * rowH;
-      const leftW   = (score / 100) * barW;
-      const rightW  = barW - leftW;
-      const kevinX  = padX + barOX + (axis.kevinPosition / 100) * barW;
+      const prox  = scores[axis.id] || 50;
+      const oppos = 100 - prox;
+      const spread   = Math.abs(prox - 50);
+      const neutralW = Math.max(10, 40 - spread);
+      const proxW    = Math.round((prox  / 100) * (100 - neutralW));
+      const opposW   = Math.round((oppos / 100) * (100 - neutralW));
+      const neutW    = 100 - proxW - opposW;
 
-      // Labels
-      ctx.font = "11px Arial";
-      ctx.textAlign = "right";
-      ctx.fillStyle = axis.left.color;
-      ctx.fillText(axis.left.label, padX + barOX - 6, ky + 14);
+      const ry   = AY + i * ROW_H;
+      const barY = ry + 28;
+
+      // Nom axe à gauche
+      ctx.fillStyle = "#555";
+      ctx.font = "11px Arial, sans-serif";
       ctx.textAlign = "left";
-      ctx.fillStyle = axis.right.color;
-      ctx.fillText(axis.right.label, padX + barOX + barW + 6, ky + 14);
+      ctx.fillText("Proche Kévin", PAD, barY - 8);
+      ctx.fillStyle = "#222";
+      ctx.font = "bold 12px Arial, sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(axis.label.toUpperCase(), PAD + 80, barY + 14);
 
-      // Barre gauche
-      ctx.fillStyle = axis.left.color;
-      ctx.beginPath();
-      ctx.roundRect(padX + barOX, ky, leftW, 18, [3, 0, 0, 3]);
+      const lw = (proxW / 100) * BAR_W;
+      const nw = (neutW / 100) * BAR_W;
+      const rw = (opposW / 100) * BAR_W;
+
+      // Barre proximité
+      ctx.fillStyle = axis.color;
+      roundRect(ctx, BAR_X, barY, lw, BAR_H, [3, 0, 0, 3]);
       ctx.fill();
+      if (proxW > 7) {
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 12px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(proxW + "%", BAR_X + lw / 2, barY + 17);
+      }
 
-      // Barre droite
-      ctx.fillStyle = axis.right.color;
-      ctx.beginPath();
-      ctx.roundRect(padX + barOX + leftW, ky, rightW, 18, [0, 3, 3, 0]);
+      // Barre neutre
+      ctx.fillStyle = "#c0c0c0";
+      ctx.fillRect(BAR_X + lw, barY, nw, BAR_H);
+      if (neutW > 7) {
+        ctx.fillStyle = "#777";
+        ctx.font = "12px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(neutW + "%", BAR_X + lw + nw / 2, barY + 17);
+      }
+
+      // Barre opposé (délavée)
+      ctx.globalAlpha = 0.35;
+      ctx.fillStyle = axis.color;
+      roundRect(ctx, BAR_X + lw + nw, barY, rw, BAR_H, [0, 3, 3, 0]);
       ctx.fill();
-
-      // Kevin marker
-      ctx.fillStyle = "rgba(255,255,255,.8)";
-      ctx.fillRect(kevinX - 1, ky, 2, 18);
-
-      // Score %
-      ctx.fillStyle = "#111";
-      ctx.font = "bold 11px Arial";
-      ctx.textAlign = "left";
-      ctx.fillText(score + "%", padX + barOX + barW + 90, ky + 14);
+      ctx.globalAlpha = 1;
+      if (opposW > 7) {
+        ctx.fillStyle = "#fff";
+        ctx.font = "bold 12px Arial";
+        ctx.textAlign = "center";
+        ctx.fillText(opposW + "%", BAR_X + lw + nw + rw / 2, barY + 17);
+      }
     });
 
     // Footer
     ctx.fillStyle = "#aaa";
-    ctx.font = "10px Arial";
+    ctx.font = "11px Arial";
     ctx.textAlign = "center";
-    ctx.fillText("kevinscale · Résultats calculés localement", W / 2, H - 16);
+    ctx.fillText("KevinScale · kevinraphael95.github.io/tst · Résultats calculés localement", W / 2, H - 14);
 
     const link = document.createElement("a");
-    link.download = "kevinscale.png";
+    link.download = "kevinscale-resultats.png";
     link.href = canvas.toDataURL("image/png");
     link.click();
   };
+
+  function roundRect(ctx, x, y, w, h, r) {
+    if (!Array.isArray(r)) r = [r, r, r, r];
+    if (w <= 0) return;
+    ctx.beginPath();
+    ctx.moveTo(x + r[0], y);
+    ctx.lineTo(x + w - r[1], y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r[1]);
+    ctx.lineTo(x + w, y + h - r[2]);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r[2], y + h);
+    ctx.lineTo(x + r[3], y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r[3]);
+    ctx.lineTo(x, y + r[0]);
+    ctx.quadraticCurveTo(x, y, x + r[0], y);
+    ctx.closePath();
+  }
 
 })();
 </script>

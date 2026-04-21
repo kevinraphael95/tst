@@ -238,13 +238,18 @@ footer a:hover { color: #fff; }
   text-align: right;
 }
 
+.q-text-wrap {
+  height: 140px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 28px;
+}
+
 .q-text {
   font-size: var(--fs-xl);
   font-weight: 600;
   line-height: 1.4;
   color: var(--text);
-  margin-bottom: 32px;
-  min-height: 80px;
 }
 
 .answer-list {
@@ -288,7 +293,6 @@ footer a:hover { color: #fff; }
 
 .quiz-nav {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   padding-top: 16px;
   border-top: 1px solid var(--border);

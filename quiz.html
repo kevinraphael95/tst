@@ -33,19 +33,20 @@
     </div>
   </div>
 
-  <div class="q-text" id="q-text">Chargement…</div>
+  <div class="q-text-wrap">
+    <div class="q-text" id="q-text">Chargement…</div>
+  </div>
 
   <div class="answer-list" id="answer-list"></div>
 
   <div class="quiz-nav">
     <button class="btn-prev" id="btn-prev" onclick="prevQ()" disabled>← Précédent</button>
-    <button class="btn-next" id="btn-next" onclick="nextQ()" disabled>Suivant →</button>
   </div>
 
 </div>
 
 <footer>
-  Un test inspiré de <a href="https://politiscales.fr" target="_blank">PolitiScales</a>.
+  Un test inspiré de <a href="https://politiscales.fr" target="_blank">PolitiScales</a>. Résultats calculés localement · Aucune donnée collectée.
 </footer>
 
 <script src="questions.js"></script>
@@ -119,25 +120,11 @@
     list.appendChild(backBtn);
 
     document.getElementById("btn-prev").disabled = index === 0;
-    const nextBtn = document.getElementById("btn-next");
-    nextBtn.disabled = state.answers[q.id] === undefined;
-    nextBtn.textContent = index === total - 1 ? "Voir mes résultats →" : "Suivant →";
   }
 
-  function select(qId, val) {
-    state.answers[qId] = val;
-    sessionStorage.setItem("ks_answers", JSON.stringify(state.answers));
-    document.querySelectorAll(".ans-btn:not(.back-btn)").forEach((b, i) => {
-      b.classList.toggle("selected", i === val);
-    });
-    document.getElementById("btn-next").disabled = false;
-  }
-
-  window.nextQ = function() {
+  function advance() {
     const q = state.shuffled[state.current];
-    if (state.answers[q.id] === undefined) return;
     if (state.current >= state.shuffled.length - 1) {
-      // Calcul scores
       const axisScores = {};
       AXES.forEach(a => axisScores[a.id] = { sum: 0, max: 0 });
       state.shuffled.forEach(q => {
@@ -163,7 +150,17 @@
       sessionStorage.setItem("ks_current", state.current);
       render(state.current);
     }
-  };
+  }
+
+  function select(qId, val) {
+    state.answers[qId] = val;
+    sessionStorage.setItem("ks_answers", JSON.stringify(state.answers));
+    // Flash sélection puis avancer
+    document.querySelectorAll(".ans-btn:not(.back-btn)").forEach((b, i) => {
+      b.classList.toggle("selected", i === val);
+    });
+    setTimeout(advance, 280);
+  }
 
   window.prevQ = function() {
     if (state.current > 0) {

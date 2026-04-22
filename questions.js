@@ -239,8 +239,8 @@ const QUESTIONS = [
   {
     id: "eta_04",
     axis: "etat",
-    text: "L'État devrait avoir le droit de censurer des contenus jugés dangereux sur internet.",
-    kevinAnswer: 3,
+    text: "L'État devrait pouvoir censurer certains contenus politiques ou idéologiques jugés dangereux.",
+    kevinAnswer: 1,
     effect: [{ axis: "etat" }],
   },
   {
@@ -408,7 +408,7 @@ const QUESTIONS = [
   {
     id: "geo_03",
     axis: "geopolitique",
-    text: "La construction européenne est globalement positive pour la France.",
+    text: "L’Union européenne actuelle (institutions + politiques) est globalement bénéfique pour la France.",
     kevinAnswer: 3,
     effect: [{ axis: "geopolitique" }],
   },

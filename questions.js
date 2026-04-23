@@ -22,7 +22,7 @@ const AXES = [
     color: "#e63946",
     left:  "Étatiste",
     right: "Libéral",
-    kevinScore: 20,
+    kevinScore: 15,
   },
   {
     id: "societe",

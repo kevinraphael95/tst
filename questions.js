@@ -46,7 +46,7 @@ const AXES = [
     color: "#66bb6a",
     left:  "Écologiste",
     right: "Productiviste",
-    kevinScore: 60,
+    kevinScore: 50,
   },
   {
     id: "geopolitique",
@@ -70,7 +70,7 @@ const AXES = [
     color: "#ef5350",
     left:  "Répressif",
     right: "Réhabilitatif",
-    kevinScore: 70,
+    kevinScore: 75,
   },
   {
     id: "tech",

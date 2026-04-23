@@ -69,9 +69,8 @@
   function shuffle(arr) {
     const byAxis = {};
     arr.forEach(q => {
-      const ax = q.effect[0].axis;
-      if (!byAxis[ax]) byAxis[ax] = [];
-      byAxis[ax].push(q);
+      if (!byAxis[q.axis]) byAxis[q.axis] = [];
+      byAxis[q.axis].push(q);
     });
     Object.values(byAxis).forEach(g => {
       for (let i = g.length - 1; i > 0; i--) {

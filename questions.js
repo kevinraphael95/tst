@@ -70,7 +70,7 @@ const AXES = [
     color: "#ef5350",
     left:  "Répressif",
     right: "Réhabilitatif",
-    kevinScore: 75,
+    kevinScore: 80,
   },
   {
     id: "tech",

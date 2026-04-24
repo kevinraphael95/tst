@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>KevinScale — Quiz</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
@@ -19,7 +19,7 @@
       <a href="about.html" title="Aide"><i class="fa fa-question-circle"></i></a>
     </div>
     <div class="headerMiddle">
-      <h1><a href="index.html">⚖️ KevinScale</a></h1>
+      <h1><a href="index.html">KevinScale</a></h1>
     </div>
     <div class="headerRight"></div>
   </div>
@@ -49,10 +49,10 @@
 </div>
 
 <footer>
-  Un test inspiré de <a href="https://politiscales.fr" target="_blank">PolitiScales</a>.
+  Un test inspiré de <a href="https://politiscales.fr" target="_blank">PolitiScales</a>. Résultats calculés localement · Aucune donnée collectée.
 </footer>
 
-<script src="questions.js"></script>
+<script src="js/questions.js"></script>
 <script>
 (function() {
   "use strict";
@@ -65,9 +65,10 @@
     { text: "Pas du tout d'accord", cls: "disagree-2" },
   ];
 
+  const WEIGHTS = [2, 1, 0, 1, 2];
+
   let state = { current: 0, answers: {}, shuffled: [] };
 
-  // ── Mélange par axe (interleaved) ──────────────────────
   function shuffle(arr) {
     const byAxis = {};
     arr.forEach(q => {
@@ -90,37 +91,24 @@
     return result;
   }
 
-  // ── Sélection mode court : 30 questions, ~4 par axe ────
-  function selectShort(all) {
-    const byAxis = {};
-    all.forEach(q => {
-      if (!byAxis[q.axis]) byAxis[q.axis] = [];
-      byAxis[q.axis].push(q);
-    });
-    // Mélanger chaque groupe puis prendre ~4 par axe (30 / 8 ≈ 3-4)
-    const perAxis = Math.ceil(30 / AXES.length); // 4
-    let pool = [];
-    Object.values(byAxis).forEach(g => {
-      const shuffled = [...g].sort(() => Math.random() - .5);
-      pool.push(...shuffled.slice(0, perAxis));
-    });
-    // Si trop (32) → couper à 30 aléatoirement
-    pool = pool.sort(() => Math.random() - .5).slice(0, 30);
-    return shuffle(pool);
-  }
-
   function render(index) {
     const q = state.shuffled[index];
     if (!q) return;
+
     const total = state.shuffled.length;
     const pct = Math.round((index / total) * 100);
 
-    document.getElementById("q-text").textContent = q.text;
+    const textEl = document.getElementById("q-text");
+    textEl.textContent = q.text;
+    // Taille adaptative selon longueur du texte
+    const len = q.text.length;
+    textEl.style.fontSize = len > 160 ? "0.95rem" : len > 100 ? "1.15rem" : len > 70 ? "1.35rem" : "";
     document.getElementById("q-progress-label").textContent = `Question ${index + 1} sur ${total}`;
     document.getElementById("progress-fill").style.width = pct + "%";
 
     const list = document.getElementById("answer-list");
     list.innerHTML = "";
+
     ANSWERS.forEach((opt, i) => {
       const btn = document.createElement("button");
       btn.className = "ans-btn " + opt.cls;
@@ -129,6 +117,8 @@
       btn.addEventListener("click", () => select(q.id, i));
       list.appendChild(btn);
     });
+
+    // Bouton retour accueil
     const backBtn = document.createElement("button");
     backBtn.className = "ans-btn back-btn";
     backBtn.textContent = "Retour à l'accueil";
@@ -139,26 +129,55 @@
   }
 
   function advance() {
+    const q = state.shuffled[state.current];
     if (state.current >= state.shuffled.length - 1) {
-      // ── Calcul scores par comparaison avec kevinAnswer ──
-      // proximité question = 1 - |userAnswer - kevinAnswer| / 4
-      // score axe = moyenne des proximités de toutes ses questions répondues
-      const axisData = {};
-      AXES.forEach(a => axisData[a.id] = { total: 0, count: 0 });
+      const WEIGHTS = [2, 1, 0, 1, 2];
 
+      // ── Étape 1 : position utilisateur sur l'axe (0–100) ──
+      // agree:true  + d'accord → pousse vers gauche (0)
+      // agree:false + d'accord → pousse vers droite (100)
+      const axisPos = {};
+      AXES.forEach(a => axisPos[a.id] = { sum: 0, max: 0 });
       state.shuffled.forEach(q => {
-        const userVal = state.answers[q.id];
-        if (userVal === undefined) return;
-        const prox = 1 - Math.abs(userVal - q.kevinAnswer) / 4;
-        axisData[q.axis].total += prox;
-        axisData[q.axis].count += 1;
+        const val = state.answers[q.id];
+        if (val === undefined || val === 2) return;
+        const w   = WEIGHTS[val];
+        const dir = val <= 1 ? 1 : -1; // d'accord=+1, pas d'accord=-1
+        // agree:true → d'accord pousse à gauche (négatif), agree:false → droite (positif)
+        const contrib = dir * (q.agree ? -1 : 1) * w;
+        axisPos[q.axis].sum += contrib;
+        axisPos[q.axis].max += w;
+      });
+
+      // ── Étape 2 : bonus proximité réponses avec kevinAnswer ──
+      // Pour chaque question : 1 - |userAnswer - kevinAnswer| / 4
+      // → de 0 (opposé) à 1 (identique)
+      const axisBonus = {};
+      AXES.forEach(a => axisBonus[a.id] = { total: 0, count: 0 });
+      state.shuffled.forEach(q => {
+        const val = state.answers[q.id];
+        if (val === undefined) return;
+        axisBonus[q.axis].total += 1 - Math.abs(val - q.kevinAnswer) / 4;
+        axisBonus[q.axis].count += 1;
       });
 
       const final = {};
       AXES.forEach(a => {
-        const { total, count } = axisData[a.id];
-        final[a.id] = count === 0 ? 50 : Math.round((total / count) * 100);
+        // Position user sur l'axe 0–100
+        const { sum, max } = axisPos[a.id];
+        const userPos = max === 0 ? 50 : Math.round(((sum + max) / (2 * max)) * 100);
+
+        // Proximité de position avec kevinScore : 100% si identique, 0% si opposé
+        const posProx = Math.round((1 - Math.abs(userPos - a.kevinScore) / 100) * 100);
+
+        // Bonus réponses : moyenne de proximité par question (0–100)
+        const { total, count } = axisBonus[a.id];
+        const bonus = count === 0 ? 50 : Math.round((total / count) * 100);
+
+        // Score final : 70% position sur axe + 30% proximité des réponses
+        final[a.id] = Math.min(100, Math.round(posProx * 0.7 + bonus * 0.3));
       });
+
       sessionStorage.setItem("ks_scores", JSON.stringify(final));
       window.location.href = "results.html";
     } else {
@@ -171,6 +190,7 @@
   function select(qId, val) {
     state.answers[qId] = val;
     sessionStorage.setItem("ks_answers", JSON.stringify(state.answers));
+    // Flash sélection puis avancer
     document.querySelectorAll(".ans-btn:not(.back-btn)").forEach((b, i) => {
       b.classList.toggle("selected", i === val);
     });
@@ -185,21 +205,18 @@
     }
   };
 
-  // ── Init ────────────────────────────────────────────────
+  // Init — restaurer session si existante
   const savedAnswers  = sessionStorage.getItem("ks_answers");
   const savedCurrent  = sessionStorage.getItem("ks_current");
   const savedShuffled = sessionStorage.getItem("ks_shuffled");
-  const mode          = sessionStorage.getItem("ks_mode") || "long";
 
   if (savedShuffled) {
-    // Reprendre session existante
-    const ids  = JSON.parse(savedShuffled);
+    const ids = JSON.parse(savedShuffled);
     const qMap = {};
     QUESTIONS.forEach(q => qMap[q.id] = q);
     state.shuffled = ids.map(id => qMap[id]).filter(Boolean);
   } else {
-    // Nouvelle session
-    state.shuffled = mode === "short" ? selectShort([...QUESTIONS]) : shuffle([...QUESTIONS]);
+    state.shuffled = shuffle([...QUESTIONS]);
     sessionStorage.setItem("ks_shuffled", JSON.stringify(state.shuffled.map(q => q.id)));
   }
 

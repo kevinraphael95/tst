@@ -1,70 +1,69 @@
-<!--  -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>KevinScale — Test idéologique</title>
+  <title>KevinScale — Test d'affinité idéologique</title>
+  <meta name="description" content="Mesurez votre proximité idéologique avec Kévin sur 8 grands axes politiques." />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
 
-<header>
-  <div id="header">
-    <div class="headerLeft">
-      <!--
-      <a href="index.html" title="Accueil"><i class="fa fa-home"></i></a>
-      -->
-      <a href="about.html" title="Aide"><i class="fa fa-question-circle"></i></a>
-    </div>
-    <div class="headerMiddle">
-      <h1><a href="index.html">⚖️ KevinScale</a></h1>
-    </div>
-    <div class="headerRight"></div>
-  </div>
-</header>
+<div id="ks-header-placeholder"></div>
 
+<main class="page-content">
 <div class="intro-wrap">
 
-  <!-- Barres colorées preview identiques PolitiScales -->
+  <!-- Barres preview -->
   <div class="preview-bars" aria-hidden="true">
     <div class="preview-bar-row">
       <div class="pbar" style="background:#e63946;width:38%">38%</div>
-      <div class="pbar" style="background:#2a9d8f;width:55%;margin-left:auto">55%</div>
+      <div class="pbar" style="background:#ab47bc;width:55%;margin-left:auto">55%</div>
     </div>
     <div class="preview-bar-row">
-      <div class="pbar" style="background:#e040fb;width:72%">72%</div>
-      <div class="pbar" style="background:#ff8f00;width:22%;margin-left:auto">22%</div>
+      <div class="pbar" style="background:#ffa726;width:72%">72%</div>
+      <div class="pbar" style="background:#66bb6a;width:22%;margin-left:auto">22%</div>
     </div>
     <div class="preview-bar-row">
-      <div class="pbar" style="background:#ffd600;color:#333;width:45%">45%</div>
-      <div class="pbar" style="background:#546e7a;width:48%;margin-left:auto">48%</div>
+      <div class="pbar" style="background:#29b6f6;width:45%">45%</div>
+      <div class="pbar" style="background:#ffca28;color:#333;width:48%;margin-left:auto">48%</div>
     </div>
     <div class="preview-bar-row">
-      <div class="pbar" style="background:#43a047;width:60%">60%</div>
-      <div class="pbar" style="background:#795548;width:35%;margin-left:auto">35%</div>
+      <div class="pbar" style="background:#ef5350;width:60%">60%</div>
+      <div class="pbar" style="background:#26c6da;width:35%;margin-left:auto">35%</div>
     </div>
   </div>
 
   <div class="intro-desc">
-    <h2>Explications</h2>
+    <h2 class="intro-title">KévinScale</h2>
 
-    <p>Bienvenue sur le <strong>KevinScale</strong>. Vous allez être confronté·e à une série d'affirmations et pour chacune d'entre elles vous devrez cliquer sur le bouton correspondant à votre opinion.</p>
+    <p class="intro-body">Bienvenue sur le <strong>KevinScale</strong>. Vous allez être confronté·e à une série d'affirmations politiques, et pour chacune d'entre elles vous devrez indiquer votre degré d'accord.</p>
 
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus.</p>
+    <p class="intro-body">À la fin du test, vous obtenez un score de <strong>0 à 100%</strong> de proximité idéologique avec Kévin sur 8 axes : économie, société, libertés, écologie, géopolitique, laïcité, justice et technologie.</p>
   </div>
 
   <div class="intro-buttons">
-    <a href="quiz.html" class="btn-start" onclick="startFresh('short')">⚡ Mode court <span class="mode-hint">30 questions</span></a>
-    <a href="quiz.html" class="btn-start btn-start-long" onclick="startFresh('long')">📋 Mode complet <span class="mode-hint">100 questions</span></a>
+    <a href="quiz.html" class="btn-start" onclick="startFresh('short')">
+      ⚡ Mode court
+      <span class="mode-hint">~10 min · 30 questions</span>
+    </a>
+    <a href="quiz.html" class="btn-start btn-start-outline" onclick="startFresh('long')">
+      📋 Mode complet
+      <span class="mode-hint">~30 min · 100 questions</span>
+    </a>
   </div>
-  <div id="resume-wrap" style="display:none; margin-top:12px; text-align:center;">
+
+  <div id="resume-wrap" style="display:none; margin-top:14px; text-align:center;">
     <a href="quiz.html" class="btn-resume">↩ Reprendre le test en cours</a>
   </div>
 
 </div>
+</main>
 
+<div id="ks-footer-placeholder"></div>
+
+<script src="js/nav.js"></script>
 <script>
   function startFresh(mode) {
     sessionStorage.clear();
@@ -74,10 +73,6 @@
     document.getElementById("resume-wrap").style.display = "block";
   }
 </script>
-
-<footer>
-  Un test inspiré de <a href="https://politiscales.fr" target="_blank">PolitiScales</a>.
-</footer>
 
 </body>
 </html>
